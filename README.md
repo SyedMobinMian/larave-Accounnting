@@ -26,7 +26,7 @@
 * **Backend Framework:** Laravel 11.x (PHP 8.2+)
 * **Admin & UI Framework:** Filament PHP v3 (TALL Stack)
 * **Frontend & Interactivity:** Livewire, Alpine.js, Tailwind CSS
-* **Database & ORM:** MySQL / SQLite, Eloquent ORM (Optimized Eager Loading)
+* **Database & ORM:** MySQL, Eloquent ORM (Optimized Eager Loading)
 * **Security & Access Control:** Role-Based Access Control (RBAC via Filament Shield)
 * **Document Generation:** Custom PDF Controllers with Dynamic Barcode & QR Integration
 
