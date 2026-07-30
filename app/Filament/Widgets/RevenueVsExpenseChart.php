@@ -39,7 +39,7 @@ class RevenueVsExpenseChart extends ChartWidget
 
             $revenueData[] = Invoice::whereYear($invoiceDateColumn, $month->year)
                 ->whereMonth($invoiceDateColumn, $month->month)
-                ->sum('total');
+                ->sum('total_amount');
 
             $expenseData[] = Expense::whereYear($expenseDateColumn, $month->year)
                 ->whereMonth($expenseDateColumn, $month->month)

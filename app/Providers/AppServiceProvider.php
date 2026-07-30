@@ -8,6 +8,7 @@ use App\Observers\ExpenseObserver;
 use App\Observers\InvoicePaymentObserver;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Implicitly grant "Super Admin" role all permissions
+        // This works in the app by using gate-related functions like auth()->user->can() and @can()
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole(config('filament-shield.super_admin.name', 'super_admin')) ? true : null;
+        });
+
         Expense::observe(ExpenseObserver::class);
         InvoicePayment::observe(InvoicePaymentObserver::class);
 

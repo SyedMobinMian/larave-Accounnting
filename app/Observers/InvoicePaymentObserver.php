@@ -16,7 +16,7 @@ class InvoicePaymentObserver
         // 1. Create Journal Entry
         $entry = JournalEntry::create([
             'date' => $payment->payment_date,
-            'reference_no' => 'PAY-' . $payment->id . ' (Inv #' . $invoice->invoice_number . ')', // Updated: 'reference' -> 'reference_no'
+            'reference_no' => 'PAY-' . $payment->id . ' (Inv #' . $invoice->invoice_number . ')',
             'description' => 'Payment received for Invoice ' . $invoice->invoice_number,
         ]);
 
@@ -43,7 +43,7 @@ class InvoicePaymentObserver
         // 2. Update Invoice Status
         $totalPaid = $invoice->payments()->sum('amount');
 
-        if ($totalPaid >= $invoice->total) {
+        if ($totalPaid >= $invoice->total_amount) {
             $invoice->update(['status' => 'paid']);
         } elseif ($totalPaid > 0) {
             $invoice->update(['status' => 'partially_paid']);

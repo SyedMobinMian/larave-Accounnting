@@ -6,26 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
-            $table->string('description');
-            $table->text('long_description')->nullable();
-            $table->decimal('qty', 15, 2)->default(1.00);
-            $table->decimal('rate', 15, 2)->default(0.00);
-            $table->decimal('amount', 15, 2)->default(0.00);
+            
+            // Ye columns required hain seeder ke liye:
+            $table->foreignId('product_id')->nullable()->constrained('products')->nullOnDelete();
+            $table->text('description')->nullable();
+            $table->integer('quantity')->default(1);
+            $table->decimal('unit_price', 15, 2)->default(0);
+            $table->decimal('total_price', 15, 2)->default(0);
+            
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoice_items');

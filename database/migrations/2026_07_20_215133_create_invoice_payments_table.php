@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('invoice_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('account_id')->constrained(); // Cash ya Bank Account
-            $table->decimal('amount', 15, 2);
-            $table->date('payment_date');
-            $table->string('payment_method'); // Cash, Bank Transfer, UPI, Cheque
-            $table->string('reference_number')->nullable(); // Txn ID / Cheque No
+            $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
+            
+            // Ye columns required hain seeder ke liye:
+            $table->string('payment_number')->nullable();
+            $table->date('payment_date')->nullable();
+            $table->decimal('amount', 15, 2)->default(0);
+            $table->string('payment_method')->nullable();
+            $table->string('reference')->nullable();
             $table->text('notes')->nullable();
+            
             $table->timestamps();
         });
     }

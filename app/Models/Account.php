@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
-    protected $guarded = []; // <-- Yeh add karein
-    public function journalItems()
+    use HasFactory;
+
+    protected $guarded = [];
+
+    public function journalItems(): HasMany
     {
         return $this->hasMany(JournalItem::class);
     }

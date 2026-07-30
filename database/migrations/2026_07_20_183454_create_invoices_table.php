@@ -14,16 +14,14 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
-            $table->string('invoice_number')->unique();
-            $table->date('date');
-            $table->date('duedate')->nullable();
-            $table->decimal('subtotal', 15, 2)->default(0.00);
-            $table->decimal('total_tax', 15, 2)->default(0.00);
-            $table->decimal('discount_total', 15, 2)->default(0.00);
-            $table->decimal('total', 15, 2)->default(0.00);
-            $table->string('status')->default('unpaid'); // unpaid, paid, partially_paid, cancelled
-            $table->text('clientnote')->nullable();
-            $table->text('adminnote')->nullable();
+            $table->string('invoice_number');
+            $table->date('issue_date'); // Ensure this exists
+            $table->date('due_date')->nullable(); // Ensure this exists
+            $table->string('status')->default('draft');
+            $table->decimal('subtotal', 15, 2)->default(0);
+            $table->decimal('tax_amount', 15, 2)->default(0);
+            $table->decimal('total_amount', 15, 2)->default(0);
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

@@ -1,7 +1,7 @@
 # Perfex CRM Migration Project (Laravel)
 
 ## 1. Environment & Technical Stack
-- **Framework:** Laravel 11/13
+- **Framework:** Laravel 12/13
 - **Admin Panel Framework:** Filament PHP v3
 - **Local Environment:** Laragon
 - **PHP Version:** 8.3.30
@@ -71,19 +71,9 @@ php artisan migrate
 - Generated Filament CRUD Resources (`AccountResource`, `JournalEntryResource`).
 
 
-
-Sandbox@chancellor MINGW64 /c/laragon/www/perfex-laravel
-$ php artisan shield:generate --all
-
-  Which panel do you want to generate permissions/policies for?
-  admin .......................................................................................... 0  
-❯ 
-
-
-
-- **Fix:** Assigned `super_admin` role to initial admin user via Tinker to resolve panel policy hiding resources.
-
-
+## Phase 5 Completed
+- **Role & Permission Setup:** Integrated `bezhansalleh/filament-shield` for automated policy generation.
+- **Super Admin Provisioning:** Generated all policies via `shield:generate` and attached the `super_admin` role to the primary admin account to ensure unrestricted access.
 
 ## Completed Features
 - **Authentication & RBAC:** Filament Shield integrated with Super Admin permissions.
@@ -91,6 +81,4 @@ $ php artisan shield:generate --all
 - **Invoicing System:** Dynamic repeater line-items with real-time `qty * rate` and auto-totalling (`subtotal`, `total_tax`, `total`).
 - **Accounting Engine:** Automated `InvoiceObserver` posting Debit/Credit entries on Creation and Payment.
 - **PDF Generation:** Installed DomPDF for printable/downloadable invoice views.
-
-
 

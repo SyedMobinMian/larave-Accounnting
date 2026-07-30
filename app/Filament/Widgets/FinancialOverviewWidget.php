@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Widgets; // (ya App\Filament\Admin\Widgets)
 
 use App\Models\Expense;
 use App\Models\Invoice;
@@ -13,10 +13,11 @@ class FinancialOverviewWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        $totalRevenue = Invoice::sum('total');
+        // Change 'total' to 'total_amount'
+        $totalRevenue = Invoice::sum('total_amount');
         
-        // Status 'unpaid' ya 'sent' ya 'pending'
-        $unpaidInvoices = Invoice::whereIn('status', ['unpaid', 'sent', 'draft'])->sum('total');
+        // Status checks with 'total_amount'
+        $unpaidInvoices = Invoice::whereIn('status', ['unpaid', 'sent', 'draft'])->sum('total_amount');
         
         $totalExpenses = Expense::sum('amount');
         $netProfit = $totalRevenue - $totalExpenses;
@@ -24,21 +25,20 @@ class FinancialOverviewWidget extends BaseWidget
         return [
             Stat::make(__('Total Revenue'), '₹' . number_format($totalRevenue, 2))
                 ->description(__('Total Invoiced Amount'))
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->color('success'),
-
-            Stat::make(__('Unpaid Receivables'), '₹' . number_format($unpaidInvoices, 2))
-                ->description(__('Pending Client Payments'))
-                ->descriptionIcon('heroicon-m-exclamation-circle')
+                ->descriptionIcon('heroicon-m-arrow-trending-up'),
+            
+            Stat::make(__('Unpaid Invoices'), '₹' . number_format($unpaidInvoices, 2))
+                ->description(__('Pending Payments'))
+                ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
 
             Stat::make(__('Total Expenses'), '₹' . number_format($totalExpenses, 2))
-                ->description(__('Total Business Spending'))
+                ->description(__('Total Outgoing'))
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color('danger'),
 
-            Stat::make(__('Net Profit / (Loss)'), '₹' . number_format($netProfit, 2))
-                ->description($netProfit >= 0 ? __('Profitable') : __('Loss'))
+            Stat::make(__('Net Profit'), '₹' . number_format($netProfit, 2))
+                ->description(__('Revenue minus Expenses'))
                 ->color($netProfit >= 0 ? 'success' : 'danger'),
         ];
     }

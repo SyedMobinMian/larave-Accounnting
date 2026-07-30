@@ -13,7 +13,8 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
-
+    
+    protected $guarded = [];
     /**
      * The attributes that are mass assignable.
      *
