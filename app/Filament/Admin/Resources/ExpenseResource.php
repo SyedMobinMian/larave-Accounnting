@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Exports\ExpensesExport;
 use App\Filament\Admin\Resources\ExpenseResource\Pages;
 use App\Models\Account;
 use App\Models\Expense;
@@ -9,13 +10,18 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExpenseResource extends Resource
 {
     protected static ?string $model = Expense::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+    protected static ?int $navigationSort = 3;
 
     // Dynamic Navigation Labels & Groups
     public static function getNavigationGroup(): ?string
@@ -43,13 +49,23 @@ class ExpenseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('Expense Details'))
+                    ->description(__('Record the expense details, vendor and payment information'))
+                    ->icon('heroicon-o-receipt-percent')
                     ->schema([
                         Forms\Components\Select::make('vendor_id')
                             ->relationship('vendor', 'name')
                             ->searchable()
                             ->preload()
                             ->nullable()
-                            ->label(__('Vendor / Payee')),
+                            ->label(__('Vendor / Payee'))
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label(__('Vendor Name'))
+                                    ->required(),
+                                Forms\Components\TextInput::make('email')
+                                    ->label(__('Email'))
+                                    ->email(),
+                            ]),
 
                         Forms\Components\DatePicker::make('expense_date')
                             ->label(__('Expense Date'))
@@ -82,7 +98,9 @@ class ExpenseResource extends Resource
                             ->label(__('Amount'))
                             ->numeric()
                             ->prefix('₹')
-                            ->required(),
+                            ->required()
+                            ->minValue(0)
+                            ->helperText(__('Enter the expense amount')),
 
                         Forms\Components\Select::make('payment_method')
                             ->label(__('Payment Method'))
@@ -113,26 +131,26 @@ class ExpenseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('expense_date')
                     ->label(__('Expense Date'))
-                    ->date()
+                    ->date('M d, Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('vendor.name')
                     ->label(__('Vendor'))
                     ->placeholder(__('N/A'))
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('expenseAccount.name')
                     ->label(__('Category'))
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('paymentAccount.name')
-                    ->label(__('Paid From'))
-                    ->searchable(),
+                    ->searchable()
+                    ->badge()
+                    ->color('warning'),
 
                 Tables\Columns\TextColumn::make('amount')
                     ->label(__('Amount'))
                     ->money('INR')
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label(__('Payment Method'))
@@ -142,28 +160,80 @@ class ExpenseResource extends Resource
                         'cash' => __('Cash'),
                         'upi' => __('UPI / GPay'),
                         'cheque' => __('Cheque'),
-                        'card' => __('Credit / Debit Card'),
+                        'card' => __('Card'),
                         default => ucfirst($state),
                     }),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('Created At'))
-                    ->dateTime()
+                    ->label(__('Created'))
+                    ->date('M d, Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('payment_method')
+                    ->label(__('Payment Method'))
+                    ->options([
+                        'bank_transfer' => __('Bank Transfer'),
+                        'cash' => __('Cash'),
+                        'upi' => __('UPI / GPay'),
+                        'cheque' => __('Cheque'),
+                        'card' => __('Card'),
+                    ]),
+                Tables\Filters\Filter::make('date_range')
+                    ->label(__('Date Range'))
+                    ->form([
+                        Forms\Components\DatePicker::make('date_from')
+                            ->label(__('From')),
+                        Forms\Components\DatePicker::make('date_to')
+                            ->label(__('To')),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => $query
+                        ->when($data['date_from'], fn ($q, $d) => $q->whereDate('expense_date', '>=', $d))
+                        ->when($data['date_to'], fn ($q, $d) => $q->whereDate('expense_date', '<=', $d))
+                    ),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make()
+                        ->form(static::form()),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('exportSelected')
+                        ->label(__('Export Selected'))
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->action(function ($records) {
+                            $ids = $records->pluck('id')->toArray();
+                            return Excel::download(new ExpensesExport(['ids' => $ids]), 'selected-expenses.xlsx');
+                        }),
                 ]),
-            ]);
+            ])
+            ->headerActions([
+                ActionGroup::make([
+                    Action::make('export')
+                        ->label(__('Export All'))
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->action(function () {
+                            $filters = array_filter(request()->only(['payment_method', 'date_from', 'date_to']));
+                            return Excel::download(new ExpensesExport($filters), 'expenses-export.xlsx');
+                        }),
+                    Action::make('exportCsv')
+                        ->label(__('Export as CSV'))
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('gray')
+                        ->action(function () {
+                            $filters = array_filter(request()->only(['payment_method', 'date_from', 'date_to']));
+                            return Excel::download(new ExpensesExport($filters), 'expenses-export.csv', \Maatwebsite\Excel\Excel::CSV);
+                        }),
+                ]),
+            ])
+            ->defaultSort('expense_date', 'desc');
     }
 
     public static function getRelations(): array
@@ -178,5 +248,11 @@ class ExpenseResource extends Resource
             'create' => Pages\CreateExpense::route('/create'),
             'edit' => Pages\EditExpense::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['vendor', 'expenseAccount', 'paymentAccount']);
     }
 }
