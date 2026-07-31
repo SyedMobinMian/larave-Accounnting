@@ -81,4 +81,167 @@ php artisan migrate
 - **Invoicing System:** Dynamic repeater line-items with real-time `qty * rate` and auto-totalling (`subtotal`, `total_tax`, `total`).
 - **Accounting Engine:** Automated `InvoiceObserver` posting Debit/Credit entries on Creation and Payment.
 - **PDF Generation:** Installed DomPDF for printable/downloadable invoice views.
+#################################################
 
+
+
+
+### NEW DIVISION
+1. Navigation & Layout
+Objective
+The application shall provide an enterprise-grade navigation system that remains scalable as the application grows.
+Requirements
+Single primary application sidebar.
+Settings shall open as a dedicated workspace.
+Settings workspace shall contain its own left navigation.
+Each settings category shall expose horizontal tabs for sub-sections.
+Navigation shall not reload the complete page.
+Breadcrumb navigation shall always be visible.
+Search should be available inside Settings.
+2. Typography & Design System
+Ye bahut important hai.
+Objective
+The application shall follow a consistent design system across all modules.
+Requirements
+Professional typography.
+Consistent spacing.
+Responsive layout.
+Design tokens.
+Light Theme.
+Dark Theme.
+High Contrast Theme.
+Custom Theme Builder.
+3. Company Management
+Isko sirf Company mat bolo.
+Likho:
+Company Profile Management
+Company Identity
+Company Name
+Legal Name
+Short Name
+Logo
+Favicon
+Brand Symbol
+Trademark
+Company Seal
+Tax Registration
+VAT Number
+GST Number
+CR Number
+Registration Number
+Contact
+Website
+Email
+Phone
+Mobile
+WhatsApp
+Address
+Billing Address
+Shipping Address
+Branches
+Branding
+Logo
+Email Logo
+Invoice Logo
+Login Background
+Login Logo
+Watermark
+4. Localization
+Ye sirf Currency nahi hai.
+Isko bolo
+Localization
+Inside:
+Languages
+Enable
+Disable
+Default Language
+RTL Support
+Import Language Pack
+Export Language Pack
+Translate UI
+Missing Translation Detector
+Currency
+Base Currency
+Multiple Currency
+Currency Symbol
+Decimal Places
+Exchange Rate
+Auto Update
+Manual Update
+Regional
+Timezone
+Date Format
+Time Format
+Week Start
+Number Format
+5. Theme Engine
+Ye bhi alag module hona chahiye.
+Theme Management
+Built-in Themes
+Dark Mode
+Light Mode
+Custom Theme
+Primary Color
+Secondary Color
+Font
+Border Radius
+Sidebar Width
+Density
+Card Style
+6. Invoice Designer
+Yahan tum bahut powerful feature describe kar rahe ho.
+Iska naam hona chahiye:
+Visual Invoice Designer
+Requirements
+Multiple Templates
+Live Preview
+Drag & Drop Layout
+Section Visibility
+Header Builder
+Footer Builder
+Logo Position
+QR Code
+Barcode
+Payment QR
+Bank Details
+Signature
+Watermark
+Terms & Conditions
+Custom Fields
+Page Margins
+Colors
+Typography
+User bina coding ke invoice design kar sake.
+Ye QuickBooks aur Odoo se bhi advanced feature hai.
+7. Template Engine
+Sirf invoice nahi.
+Future ke liye:
+Invoice
+Estimate
+Purchase Order
+Quotation
+Delivery Note
+Receipt
+Credit Note
+Email Templates
+PDF Templates
+8. Settings
+Main is tarah organize karta.
+Settings
+General
+Company
+Localization
+Branding
+Theme
+Invoice Designer
+Finance
+Sales
+Procurement
+Inventory
+Users
+Roles
+Security
+Notifications
+Integrations
+AI
+System

@@ -26,7 +26,7 @@ class ProductResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Procurement & Inventory');
+        return __('Inventory');
     }
 
     public static function getNavigationLabel(): string

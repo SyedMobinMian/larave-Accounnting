@@ -22,7 +22,7 @@ class VendorResource extends Resource
     protected static ?string $model = Vendor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-    protected static ?string $navigationGroup = 'Procurement & Inventory';
+    protected static ?string $navigationGroup = 'Procurement';
     protected static ?string $navigationLabel = 'Vendors';
     protected static ?string $modelLabel = 'Vendor';
     protected static ?string $pluralModelLabel = 'Vendors';

@@ -18,7 +18,7 @@ class BankAccountResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Financials');
+        return __('Banking');
     }
 
     public static function getNavigationLabel(): string

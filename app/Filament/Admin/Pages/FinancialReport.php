@@ -11,7 +11,7 @@ class FinancialReport extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
 
-    protected static ?string $navigationGroup = 'Financials';
+    protected static ?string $navigationGroup = 'Reports';
 
     protected static string $view = 'filament.pages.financial-report';
 

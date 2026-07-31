@@ -55,19 +55,35 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            // 📌 Sidebar Group Order
+            // 📌 Sidebar Group Order (Enterprise Hierarchy)
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(fn (): string => __('Sales & CRM'))
+                    ->icon('heroicon-o-arrow-trending-up')
+                    ->collapsed(false),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('Procurement'))
+                    ->icon('heroicon-o-truck')
+                    ->collapsed(false),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('Inventory'))
+                    ->icon('heroicon-o-cube')
+                    ->collapsed(false),
+                NavigationGroup::make()
+                    ->label(fn (): string => __('Banking'))
+                    ->icon('heroicon-o-building-library')
                     ->collapsed(false),
                 NavigationGroup::make()
                     ->label(fn (): string => __('Financials'))
+                    ->icon('heroicon-o-calculator')
                     ->collapsed(false),
                 NavigationGroup::make()
-                    ->label(fn (): string => __('Procurement & Inventory'))
+                    ->label(fn (): string => __('Reports'))
+                    ->icon('heroicon-o-chart-bar-square')
                     ->collapsed(false),
                 NavigationGroup::make()
-                    ->label(fn (): string => __('Settings & Access'))
+                    ->label(fn (): string => __('Settings'))
+                    ->icon('heroicon-o-cog-6-tooth')
                     ->collapsed(false),
             ])
             ->middleware([
