@@ -1,5 +1,26 @@
 @php
     $categories = $this->getCategories();
+
+    // Organize categories by group
+    $groupedCategories = [];
+    $groupOrder = ['Core', 'Business', 'Appearance', 'Administration', 'Platform'];
+    foreach ($categories as $key => $category) {
+        $group = $category['group'] ?? 'Other';
+        $groupedCategories[$group][$key] = $category;
+    }
+    // Sort groups by defined order
+    $sortedGroups = [];
+    foreach ($groupOrder as $g) {
+        if (isset($groupedCategories[$g])) {
+            $sortedGroups[$g] = $groupedCategories[$g];
+        }
+    }
+    // Add any remaining groups at the end
+    foreach ($groupedCategories as $g => $items) {
+        if (!isset($sortedGroups[$g])) {
+            $sortedGroups[$g] = $items;
+        }
+    }
 @endphp
 
 <x-filament-panels::page>
@@ -12,17 +33,20 @@
                     <span>Settings</span>
                 </div>
                 <nav class="settings-workspace__nav-list">
-                    @foreach($categories as $categoryKey => $category)
-                        <button
-                            wire:click="$set('activeCategory', '{{ $categoryKey }}')"
-                            class="settings-workspace__nav-item {{ $activeCategory === $categoryKey ? 'settings-workspace__nav-item--active' : '' }}"
-                            type="button"
-                        >
-                            @if(isset($category['icon']))
-                                <x-filament::icon name="{{ $category['icon'] }}" class="h-5 w-5" />
-                            @endif
-                            <span>{{ $category['label'] }}</span>
-                        </button>
+                    @foreach($sortedGroups as $groupName => $groupItems)
+                        <div class="settings-workspace__nav-group-label">{{ $groupName }}</div>
+                        @foreach($groupItems as $categoryKey => $category)
+                            <button
+                                wire:click="$set('activeCategory', '{{ $categoryKey }}')"
+                                class="settings-workspace__nav-item {{ $activeCategory === $categoryKey ? 'settings-workspace__nav-item--active' : '' }}"
+                                type="button"
+                            >
+                                @if(isset($category['icon']))
+                                    <x-filament::icon name="{{ $category['icon'] }}" class="h-5 w-5" />
+                                @endif
+                                <span>{{ $category['label'] }}</span>
+                            </button>
+                        @endforeach
                     @endforeach
                 </nav>
             </div>
@@ -106,7 +130,23 @@
             padding: 0.75rem;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.125rem;
+        }
+
+        .settings-workspace__nav-group-label {
+            padding: 0.75rem 1rem 0.375rem;
+            font-size: 0.675rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--filament-forms-label-color, #6b7280);
+            opacity: 0.6;
+        }
+
+        .settings-workspace__nav-group-label:not(:first-child) {
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--filament-forms-border-color, rgba(0,0,0,0.06));
+            padding-top: 0.75rem;
         }
 
         .settings-workspace__nav-item {

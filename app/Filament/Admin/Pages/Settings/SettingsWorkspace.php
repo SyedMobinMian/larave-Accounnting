@@ -47,14 +47,23 @@ class SettingsWorkspace extends Page implements HasForms
     protected string $currentSettingsClass = GeneralSettings::class;
 
     /**
-     * All settings categories with their tabs.
+     * All settings categories organized into enterprise groups.
+     *
+     * Structure: Group > Category > Tabs
+     * - Core: General, Company, Localization
+     * - Business: Finance, Sales, Procurement, Inventory
+     * - Appearance: Appearance & Branding
+     * - Administration: Access Management, Notifications, Security
+     * - Platform: Integrations, AI, System
      */
     public static function getCategories(): array
     {
         return [
+            // ─── CORE ───────────────────────────────────────
             'general' => [
                 'label' => 'General',
                 'icon' => 'heroicon-o-adjustments-horizontal',
+                'group' => 'Core',
                 'tabs' => [
                     'system-defaults' => ['label' => 'System Defaults', 'icon' => 'heroicon-o-server'],
                 ],
@@ -62,28 +71,16 @@ class SettingsWorkspace extends Page implements HasForms
             'company' => [
                 'label' => 'Company',
                 'icon' => 'heroicon-o-building-office',
+                'group' => 'Core',
                 'tabs' => [
                     'company-info' => ['label' => 'Company Info', 'icon' => 'heroicon-o-information-circle'],
                     'branding' => ['label' => 'Branding', 'icon' => 'heroicon-o-photo'],
                 ],
             ],
-            'users' => [
-                'label' => 'Users',
-                'icon' => 'heroicon-o-users',
-                'tabs' => [
-                    'users-list' => ['label' => 'All Users', 'icon' => 'heroicon-o-users'],
-                ],
-            ],
-            'roles' => [
-                'label' => 'Roles',
-                'icon' => 'heroicon-o-shield-check',
-                'tabs' => [
-                    'roles-permissions' => ['label' => 'Roles & Permissions', 'icon' => 'heroicon-o-shield-check'],
-                ],
-            ],
             'localization' => [
                 'label' => 'Localization',
                 'icon' => 'heroicon-o-language',
+                'group' => 'Core',
                 'tabs' => [
                     'currency' => ['label' => 'Currency', 'icon' => 'heroicon-o-currency-dollar'],
                     'language' => ['label' => 'Language', 'icon' => 'heroicon-o-language'],
@@ -93,18 +90,43 @@ class SettingsWorkspace extends Page implements HasForms
                     'date-format' => ['label' => 'Date Format', 'icon' => 'heroicon-o-calendar'],
                 ],
             ],
-            'accounting' => [
-                'label' => 'Accounting',
+
+            // ─── BUSINESS ───────────────────────────────────
+            'finance' => [
+                'label' => 'Finance',
                 'icon' => 'heroicon-o-calculator',
+                'group' => 'Business',
                 'tabs' => [
                     'chart-of-accounts' => ['label' => 'Chart of Accounts', 'icon' => 'heroicon-o-rectangle-stack'],
                     'fiscal-year' => ['label' => 'Fiscal Year', 'icon' => 'heroicon-o-calendar-days'],
                     'tax-settings' => ['label' => 'Tax Settings', 'icon' => 'heroicon-o-receipt-percent'],
+                    'payment-gateways' => ['label' => 'Payment Gateways', 'icon' => 'heroicon-o-credit-card'],
+                    'bank-transfer' => ['label' => 'Bank Transfer', 'icon' => 'heroicon-o-building-library'],
+                    'upi' => ['label' => 'UPI', 'icon' => 'heroicon-o-qr-code'],
+                ],
+            ],
+            'sales' => [
+                'label' => 'Sales',
+                'icon' => 'heroicon-o-arrow-trending-up',
+                'group' => 'Business',
+                'tabs' => [
+                    'invoice-defaults' => ['label' => 'Invoice Defaults', 'icon' => 'heroicon-o-document-text'],
+                    'estimate-defaults' => ['label' => 'Estimate Defaults', 'icon' => 'heroicon-o-document-duplicate'],
+                ],
+            ],
+            'procurement' => [
+                'label' => 'Procurement',
+                'icon' => 'heroicon-o-shopping-bag',
+                'group' => 'Business',
+                'tabs' => [
+                    'purchase-settings' => ['label' => 'Purchase Settings', 'icon' => 'heroicon-o-cog'],
+                    'vendor-defaults' => ['label' => 'Vendor Defaults', 'icon' => 'heroicon-o-truck'],
                 ],
             ],
             'inventory' => [
                 'label' => 'Inventory',
                 'icon' => 'heroicon-o-cube',
+                'group' => 'Business',
                 'tabs' => [
                     'warehouses' => ['label' => 'Warehouses', 'icon' => 'heroicon-o-building-storefront'],
                     'units-of-measure' => ['label' => 'Units of Measure', 'icon' => 'heroicon-o-scale'],
@@ -112,46 +134,75 @@ class SettingsWorkspace extends Page implements HasForms
                     'stock-rules' => ['label' => 'Stock Rules', 'icon' => 'heroicon-o-exclamation-triangle'],
                 ],
             ],
-            'procurement' => [
-                'label' => 'Procurement',
-                'icon' => 'heroicon-o-shopping-bag',
+
+            // ─── APPEARANCE ─────────────────────────────────
+            'appearance' => [
+                'label' => 'Appearance & Branding',
+                'icon' => 'heroicon-o-paint-brush',
+                'group' => 'Appearance',
                 'tabs' => [
-                    'purchase-settings' => ['label' => 'Purchase Settings', 'icon' => 'heroicon-o-cog'],
-                    'vendor-defaults' => ['label' => 'Vendor Defaults', 'icon' => 'heroicon-o-truck'],
+                    'theme' => ['label' => 'Theme', 'icon' => 'heroicon-o-swatch'],
+                    'layout' => ['label' => 'Layout', 'icon' => 'heroicon-o-table-cells'],
+                    'invoice-designer' => ['label' => 'Invoice Designer', 'icon' => 'heroicon-o-document-chart-bar'],
+                ],
+            ],
+
+            // ─── ADMINISTRATION ─────────────────────────────
+            'access-management' => [
+                'label' => 'Access Management',
+                'icon' => 'heroicon-o-shield-check',
+                'group' => 'Administration',
+                'tabs' => [
+                    'users' => ['label' => 'All Users', 'icon' => 'heroicon-o-users'],
+                    'roles-permissions' => ['label' => 'Roles & Permissions', 'icon' => 'heroicon-o-shield-check'],
+                ],
+            ],
+            'notifications' => [
+                'label' => 'Notifications',
+                'icon' => 'heroicon-o-bell',
+                'group' => 'Administration',
+                'tabs' => [
+                    'email-settings' => ['label' => 'Email (SMTP)', 'icon' => 'heroicon-o-envelope'],
+                    'notification-preferences' => ['label' => 'Notifications', 'icon' => 'heroicon-o-bell-alert'],
                 ],
             ],
             'security' => [
                 'label' => 'Security',
                 'icon' => 'heroicon-o-lock-closed',
+                'group' => 'Administration',
                 'tabs' => [
                     'password-policy' => ['label' => 'Password Policy', 'icon' => 'heroicon-o-key'],
                     'session' => ['label' => 'Session', 'icon' => 'heroicon-o-clock'],
                     'audit-log' => ['label' => 'Audit Log', 'icon' => 'heroicon-o-document-text'],
                 ],
             ],
-            'email' => [
-                'label' => 'Email',
-                'icon' => 'heroicon-o-envelope',
+
+            // ─── PLATFORM ───────────────────────────────────
+            'integrations' => [
+                'label' => 'Integrations',
+                'icon' => 'heroicon-o-puzzle-piece',
+                'group' => 'Platform',
                 'tabs' => [
-                    'smtp-settings' => ['label' => 'SMTP Settings', 'icon' => 'heroicon-o-server'],
-                    'notifications' => ['label' => 'Notifications', 'icon' => 'heroicon-o-bell'],
+                    'payment-gateways' => ['label' => 'Payment Gateways', 'icon' => 'heroicon-o-credit-card'],
+                    'api-keys' => ['label' => 'API Keys', 'icon' => 'heroicon-o-key'],
                 ],
             ],
-            'payment' => [
-                'label' => 'Payment',
-                'icon' => 'heroicon-o-credit-card',
+            'ai' => [
+                'label' => 'AI',
+                'icon' => 'heroicon-o-sparkles',
+                'group' => 'Platform',
                 'tabs' => [
-                    'gateways' => ['label' => 'Payment Gateways', 'icon' => 'heroicon-o-credit-card'],
-                    'bank-transfer' => ['label' => 'Bank Transfer', 'icon' => 'heroicon-o-building-library'],
-                    'upi' => ['label' => 'UPI', 'icon' => 'heroicon-o-qr-code'],
+                    'ai-settings' => ['label' => 'AI Configuration', 'icon' => 'heroicon-o-cpu-chip'],
                 ],
             ],
-            'customization' => [
-                'label' => 'Customization',
-                'icon' => 'heroicon-o-paint-brush',
+            'system' => [
+                'label' => 'System',
+                'icon' => 'heroicon-o-server-stack',
+                'group' => 'Platform',
                 'tabs' => [
-                    'theme' => ['label' => 'Theme', 'icon' => 'heroicon-o-swatch'],
-                    'layout' => ['label' => 'Layout', 'icon' => 'heroicon-o-table-cells'],
+                    'system-info' => ['label' => 'System Information', 'icon' => 'heroicon-o-information-circle'],
+                    'logs' => ['label' => 'System Logs', 'icon' => 'heroicon-o-document-text'],
+                    'maintenance' => ['label' => 'Maintenance', 'icon' => 'heroicon-o-wrench-screwdriver'],
                 ],
             ],
         ];
@@ -214,6 +265,7 @@ class SettingsWorkspace extends Page implements HasForms
         $tabKey = $this->activeCategory . '.' . $this->activeTab;
 
         return match ($tabKey) {
+            // Core
             'general.system-defaults' => $this->getGeneralSystemDefaultsSchema(),
             'company.company-info' => $this->getCompanyInfoSchema(),
             'company.branding' => $this->getBrandingSchema(),
@@ -223,21 +275,56 @@ class SettingsWorkspace extends Page implements HasForms
             'localization.timezone' => $this->getTimezoneSchema(),
             'localization.tax-rules' => $this->getTaxRulesSchema(),
             'localization.date-format' => $this->getDateFormatSchema(),
-            'accounting.fiscal-year' => $this->getFiscalYearSchema(),
-            'accounting.tax-settings' => $this->getTaxSettingsSchema(),
-            'inventory.stock-rules' => $this->getStockRulesSchema(),
+
+            // Business - Finance
+            'finance.chart-of-accounts' => $this->getFiscalYearSchema(),
+            'finance.fiscal-year' => $this->getFiscalYearSchema(),
+            'finance.tax-settings' => $this->getTaxSettingsSchema(),
+            'finance.payment-gateways' => $this->getPaymentGatewaysSchema(),
+            'finance.bank-transfer' => $this->getBankTransferSchema(),
+            'finance.upi' => $this->getUpiSchema(),
+
+            // Business - Sales
+            'sales.invoice-defaults' => $this->getInvoiceDefaultsSchema(),
+            'sales.estimate-defaults' => $this->getEstimateDefaultsSchema(),
+
+            // Business - Procurement
             'procurement.purchase-settings' => $this->getPurchaseSettingsSchema(),
             'procurement.vendor-defaults' => $this->getVendorDefaultsSchema(),
+
+            // Business - Inventory
+            'inventory.stock-rules' => $this->getStockRulesSchema(),
+
+            // Appearance
+            'appearance.theme' => $this->getThemeSchema(),
+            'appearance.layout' => $this->getLayoutSchema(),
+            'appearance.invoice-designer' => $this->getInvoiceDesignerSchema(),
+
+            // Administration - Access Management
+            'access-management.users' => $this->getUsersSchema(),
+            'access-management.roles-permissions' => $this->getRolesPermissionsSchema(),
+
+            // Administration - Notifications
+            'notifications.email-settings' => $this->getSmtpSettingsSchema(),
+            'notifications.notification-preferences' => $this->getEmailNotificationsSchema(),
+
+            // Administration - Security
             'security.password-policy' => $this->getPasswordPolicySchema(),
             'security.session' => $this->getSessionSchema(),
             'security.audit-log' => $this->getAuditLogSchema(),
-            'email.smtp-settings' => $this->getSmtpSettingsSchema(),
-            'email.notifications' => $this->getEmailNotificationsSchema(),
-            'payment.gateways' => $this->getPaymentGatewaysSchema(),
-            'payment.bank-transfer' => $this->getBankTransferSchema(),
-            'payment.upi' => $this->getUpiSchema(),
-            'customization.theme' => $this->getThemeSchema(),
-            'customization.layout' => $this->getLayoutSchema(),
+
+            // Platform - Integrations
+            'integrations.payment-gateways' => $this->getPaymentGatewaysSchema(),
+            'integrations.api-keys' => $this->getApiKeysSchema(),
+
+            // Platform - AI
+            'ai.ai-settings' => $this->getAiSettingsSchema(),
+
+            // Platform - System
+            'system.system-info' => $this->getSystemInfoSchema(),
+            'system.logs' => $this->getSystemLogsSchema(),
+            'system.maintenance' => $this->getMaintenanceSchema(),
+
             default => $this->getGeneralSystemDefaultsSchema(),
         };
     }
@@ -932,6 +1019,269 @@ class SettingsWorkspace extends Page implements HasForms
                             'md' => 'Medium',
                         ])
                         ->default('full'),
+                ])->columns(2),
+        ];
+    }
+
+    // ─── NEW SCHEMAS FOR PHASE 3 ──────────────────────────
+
+    protected function getInvoiceDefaultsSchema(): array
+    {
+        return [
+            Section::make('Invoice Defaults')
+                ->description('Configure default settings for new invoices')
+                ->schema([
+                    TextInput::make('invoice_prefix')
+                        ->label('Invoice Number Prefix')
+                        ->placeholder('INV-'),
+                    TextInput::make('invoice_start_number')
+                        ->label('Starting Invoice Number')
+                        ->numeric()
+                        ->default(1),
+                    Select::make('default_invoice_status')
+                        ->label('Default Status')
+                        ->options(['draft' => 'Draft', 'unpaid' => 'Unpaid'])
+                        ->default('draft'),
+                    TextInput::make('payment_terms_days')
+                        ->label('Default Payment Terms (Days)')
+                        ->numeric()
+                        ->default(30)
+                        ->suffix('days'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getEstimateDefaultsSchema(): array
+    {
+        return [
+            Section::make('Estimate Defaults')
+                ->description('Configure default settings for estimates/quotes')
+                ->schema([
+                    TextInput::make('estimate_prefix')
+                        ->label('Estimate Number Prefix')
+                        ->placeholder('EST-'),
+                    TextInput::make('estimate_validity_days')
+                        ->label('Estimate Validity (Days)')
+                        ->numeric()
+                        ->default(30)
+                        ->suffix('days'),
+                    Toggle::make('auto_convert_to_invoice')
+                        ->label('Auto-convert accepted estimates to invoices'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getUsersSchema(): array
+    {
+        return [
+            Section::make('User Management')
+                ->description('Manage system users')
+                ->schema([
+                    Toggle::make('enable_user_registration')
+                        ->label('Allow Self-Registration')
+                        ->default(true),
+                    Select::make('default_user_role')
+                        ->label('Default Role for New Users')
+                        ->options(fn () => \Spatie\Permission\Models\Role::pluck('name', 'name'))
+                        ->default('panel_user'),
+                    Toggle::make('require_email_verification')
+                        ->label('Require Email Verification'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getRolesPermissionsSchema(): array
+    {
+        return [
+            Section::make('Roles & Permissions')
+                ->description('Configure access control roles and their permissions')
+                ->schema([
+                    Toggle::make('enable_role_hierarchy')
+                        ->label('Enable Role Hierarchy'),
+                ]),
+        ];
+    }
+
+    protected function getInvoiceDesignerSchema(): array
+    {
+        return [
+            Section::make('Invoice Designer')
+                ->description('Customize the look and feel of your invoices')
+                ->schema([
+                    Select::make('invoice_template')
+                        ->label('Default Template')
+                        ->options([
+                            'modern' => 'Modern',
+                            'classic' => 'Classic',
+                            'minimal' => 'Minimal',
+                            'professional' => 'Professional',
+                        ])
+                        ->default('modern'),
+                    Select::make('invoice_page_size')
+                        ->label('Page Size')
+                        ->options([
+                            'a4' => 'A4',
+                            'letter' => 'Letter',
+                            'legal' => 'Legal',
+                        ])
+                        ->default('a4'),
+                    Toggle::make('show_logo_on_invoice')
+                        ->label('Show Company Logo')
+                        ->default(true),
+                    Toggle::make('show_qr_code')
+                        ->label('Show QR Code (UPI)'),
+                    Toggle::make('show_barcode')
+                        ->label('Show Barcode'),
+                    Toggle::make('show_bank_details')
+                        ->label('Show Bank Transfer Details'),
+                    Toggle::make('show_terms')
+                        ->label('Show Terms & Conditions'),
+                    Toggle::make('show_signature')
+                        ->label('Show Signature Area'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getApiKeysSchema(): array
+    {
+        return [
+            Section::make('API Keys')
+                ->description('Manage API integrations')
+                ->schema([
+                    Toggle::make('enable_api_access')
+                        ->label('Enable REST API Access'),
+                    TextInput::make('api_rate_limit')
+                        ->label('API Rate Limit (per minute)')
+                        ->numeric()
+                        ->default(60),
+                    Toggle::make('enable_webhooks')
+                        ->label('Enable Webhooks'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getAiSettingsSchema(): array
+    {
+        return [
+            Section::make('AI Configuration')
+                ->description('Configure AI-powered features')
+                ->schema([
+                    Toggle::make('enable_ai_assistant')
+                        ->label('Enable AI Assistant'),
+                    Select::make('ai_provider')
+                        ->label('AI Provider')
+                        ->options([
+                            'openai' => 'OpenAI',
+                            'gemini' => 'Google Gemini',
+                            'claude' => 'Anthropic Claude',
+                        ])
+                        ->default('openai'),
+                    TextInput::make('ai_api_key')
+                        ->label('API Key')
+                        ->password(),
+                    Select::make('ai_model')
+                        ->label('Model')
+                        ->options([
+                            'gpt-4' => 'GPT-4',
+                            'gpt-3.5-turbo' => 'GPT-3.5 Turbo',
+                        ])
+                        ->default('gpt-3.5-turbo'),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getSystemInfoSchema(): array
+    {
+        return [
+            Section::make('System Information')
+                ->description('System environment details')
+                ->schema([
+                    TextInput::make('app_name')
+                        ->label('Application Name')
+                        ->default(config('app.name')),
+                    TextInput::make('app_version')
+                        ->label('Version')
+                        ->default('1.0.0'),
+                    TextInput::make('php_version')
+                        ->label('PHP Version')
+                        ->default(PHP_VERSION)
+                        ->disabled(),
+                    TextInput::make('laravel_version')
+                        ->label('Laravel Version')
+                        ->default(app()->version())
+                        ->disabled(),
+                    TextInput::make('database_connection')
+                        ->label('Database')
+                        ->default(config('database.default'))
+                        ->disabled(),
+                    TextInput::make('environment')
+                        ->label('Environment')
+                        ->default(app()->environment())
+                        ->disabled(),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getSystemLogsSchema(): array
+    {
+        return [
+            Section::make('System Logs')
+                ->description('Configure logging preferences')
+                ->schema([
+                    Select::make('log_level')
+                        ->label('Minimum Log Level')
+                        ->options([
+                            'debug' => 'Debug',
+                            'info' => 'Info',
+                            'notice' => 'Notice',
+                            'warning' => 'Warning',
+                            'error' => 'Error',
+                            'critical' => 'Critical',
+                            'alert' => 'Alert',
+                            'emergency' => 'Emergency',
+                        ])
+                        ->default('debug'),
+                    Select::make('log_channel')
+                        ->label('Log Channel')
+                        ->options([
+                            'stack' => 'Stack (Multiple Channels)',
+                            'single' => 'Single File',
+                            'daily' => 'Daily File',
+                            'syslog' => 'Syslog',
+                            'errorlog' => 'Error Log',
+                        ])
+                        ->default('stack'),
+                    TextInput::make('log_retention_days')
+                        ->label('Log Retention (Days)')
+                        ->numeric()
+                        ->default(30),
+                ])->columns(2),
+        ];
+    }
+
+    protected function getMaintenanceSchema(): array
+    {
+        return [
+            Section::make('Maintenance Mode')
+                ->description('Control system maintenance')
+                ->schema([
+                    Toggle::make('maintenance_mode')
+                        ->label('Enable Maintenance Mode')
+                        ->helperText('Only admins can access the system when enabled.'),
+                    Textarea::make('maintenance_message')
+                        ->label('Maintenance Message')
+                        ->rows(3)
+                        ->helperText('Message displayed to users during maintenance.'),
+                ]),
+            Section::make('Cache & Optimization')
+                ->schema([
+                    Toggle::make('enable_cache')
+                        ->label('Enable Cache')
+                        ->default(true),
+                    TextInput::make('cache_ttl_seconds')
+                        ->label('Cache Duration (Seconds)')
+                        ->numeric()
+                        ->default(3600),
                 ])->columns(2),
         ];
     }
