@@ -30,3 +30,30 @@
 - Pagination with `defaultSort`
 - Cached options for select filters
 
+---
+
+## Phase 1: Main Sidebar Refactoring ✅
+- **7 enterprise navigation groups**: Dashboard, Sales & CRM, Procurement, Inventory, Banking, Financials, Reports, Settings
+- **Split** `Procurement & Inventory` → separate `Procurement` + `Inventory` groups
+- **Created** `Banking` group (BankAccountResource moved)
+- **Created** `Reports` group (FinancialReport moved)
+- **Created** `Settings` group (SettingsWorkspace moved)
+- **Moved** InvoiceResource from Financials → Sales & CRM
+- **Updated icons**: ContactResource (phone), JournalEntryResource (book-open)
+- **All routes preserved**, no functionality changed
+
+## Phase 3: Settings Architecture Reorganization ✅
+Settings workspace redesigned with enterprise hierarchy:
+
+| Group | Categories | Tabs |
+|-------|-----------|------|
+| **Core** | General, Company, Localization | System Defaults, Company Info, Branding, Currency, Language, Country, Timezone, Tax Rules, Date Format |
+| **Business** | Finance, Sales, Procurement, Inventory | Chart of Accounts, Fiscal Year, Tax Settings, Payment Gateways, Bank Transfer, UPI, Invoice Defaults, Estimate Defaults, Purchase Settings, Vendor Defaults, Warehouses, Units of Measure, Categories, Stock Rules |
+| **Appearance** | Appearance & Branding | Theme, Layout, Invoice Designer |
+| **Administration** | Access Management, Notifications, Security | Users, Roles & Permissions, Email (SMTP), Notifications, Password Policy, Session, Audit Log |
+| **Platform** | Integrations, AI, System | Payment Gateways, API Keys, AI Configuration, System Info, Logs, Maintenance |
+
+**New form schemas added**: Invoice Designer (QR, barcode, templates, page size), AI config (provider, model, API key), API keys, System info (PHP/Laravel version), Logs (level, channel, retention), Maintenance mode, Users, Roles, Sales defaults (prefix, payment terms)
+
+**Settings sidebar** now displays group headers (Core, Business, Appearance, Administration, Platform) with proper styling and separators.
+
