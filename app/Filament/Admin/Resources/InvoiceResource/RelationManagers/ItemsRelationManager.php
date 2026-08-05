@@ -19,7 +19,7 @@ class ItemsRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('product_id')
-                    ->label('Product')
+                    ->label(__('Product'))
                     ->options(Product::pluck('name', 'id'))
                     ->searchable()
                     ->reactive()
@@ -33,9 +33,11 @@ class ItemsRelationManager extends RelationManager
                     ->columnSpan(4),
 
                 Forms\Components\TextInput::make('description')
+                    ->label(__('Description'))
                     ->columnSpan(8),
 
                 Forms\Components\TextInput::make('quantity')
+                    ->label(__('Qty'))
                     ->numeric()
                     ->default(1)
                     ->reactive()
@@ -45,6 +47,7 @@ class ItemsRelationManager extends RelationManager
                     ->columnSpan(4),
 
                 Forms\Components\TextInput::make('unit_price')
+                    ->label(__('Rate'))
                     ->numeric()
                     ->prefix('$')
                     ->reactive()
@@ -54,6 +57,7 @@ class ItemsRelationManager extends RelationManager
                     ->columnSpan(4),
 
                 Forms\Components\TextInput::make('total_price')
+                    ->label(__('Total'))
                     ->numeric()
                     ->prefix('$')
                     ->readOnly()
@@ -66,11 +70,11 @@ class ItemsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('description')
             ->columns([
-                Tables\Columns\TextColumn::make('product.name')->label('Product'),
-                Tables\Columns\TextColumn::make('description'),
-                Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('unit_price')->money('USD'),
-                Tables\Columns\TextColumn::make('total_price')->money('USD'),
+                Tables\Columns\TextColumn::make('product.name')->label(__('Product')),
+                Tables\Columns\TextColumn::make('description')->label(__('Description')),
+                Tables\Columns\TextColumn::make('quantity')->label(__('Qty')),
+                Tables\Columns\TextColumn::make('unit_price')->label(__('Rate'))->money('USD'),
+                Tables\Columns\TextColumn::make('total_price')->label(__('Total'))->money('USD'),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),

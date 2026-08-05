@@ -3,117 +3,83 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
-use App\Models\GoodsReceiptNote;
-use App\Models\Product;
 use App\Models\PurchaseOrder;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseOrderResource extends Resource
 {
     protected static ?string $model = PurchaseOrder::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $navigationGroup = 'Procurement';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationLabel = 'Purchase Orders';
+    protected static ?string $modelLabel = 'Purchase Order';
+    protected static ?string $pluralModelLabel = 'Purchase Orders';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('PO Header')
-                    ->description(__('Purchase order identification and vendor'))
-                    ->icon('heroicon-o-receipt-percent')
+                Forms\Components\Section::make(__('Purchase Order Details'))
+                    ->description(__('Create purchase orders for vendors'))
+                    ->icon('heroicon-o-shopping-cart')
                     ->schema([
-                        Forms\Components\TextInput::make('po_number')
-                            ->label(__('PO Number'))
-                            ->default('PO-' . strtoupper(uniqid()))
-                            ->required()
-                            ->readOnly(),
-
                         Forms\Components\Select::make('vendor_id')
                             ->label(__('Vendor'))
-                            ->relationship('vendor', 'company_name')
+                            ->relationship('vendor', 'name')
                             ->searchable()
                             ->preload()
                             ->required(),
-
+                        Forms\Components\TextInput::make('order_number')
+                            ->label(__('Order Number'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default('PO-' . strtoupper(uniqid())),
                         Forms\Components\DatePicker::make('order_date')
                             ->label(__('Order Date'))
-                            ->default(now())
-                            ->required(),
-
+                            ->required()
+                            ->default(now()),
+                        Forms\Components\DatePicker::make('expected_delivery_date')
+                            ->label(__('Expected Delivery Date')),
                         Forms\Components\Select::make('status')
                             ->label(__('Status'))
                             ->options([
-                                'draft' => 'Draft',
-                                'issued' => 'Issued',
-                                'partially_received' => 'Partially Received',
-                                'received' => 'Received',
-                                'cancelled' => 'Cancelled',
+                                'draft' => __('Draft'),
+                                'sent' => __('Sent'),
+                                'confirmed' => __('Confirmed'),
+                                'received' => __('Received'),
+                                'cancelled' => __('Cancelled'),
                             ])
                             ->default('draft')
                             ->required(),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Line Items')
-                    ->description(__('Products and quantities to order'))
-                    ->icon('heroicon-o-list-bullet')
-                    ->schema([
-                        Forms\Components\Repeater::make('items')
-                            ->relationship('items')
-                            ->schema([
-                                Forms\Components\Select::make('product_id')
-                                    ->label(__('Product'))
-                                    ->relationship('product', 'name')
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                        $product = Product::find($state);
-                                        if ($product) {
-                                            $set('unit_price', $product->selling_price);
-                                        }
-                                    })
-                                    ->required()
-                                    ->columnSpan(4),
-
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label(__('Quantity'))
-                                    ->numeric()
-                                    ->default(1)
-                                    ->reactive()
-                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => 
-                                        $set('subtotal', (float)$state * (float)$get('unit_price'))
-                                    )
-                                    ->required()
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('unit_price')
-                                    ->label(__('Unit Price'))
-                                    ->numeric()
-                                    ->prefix('₹')
-                                    ->reactive()
-                                    ->afterStateUpdated(fn ($state, Forms\Get $get, Forms\Set $set) => 
-                                        $set('subtotal', (float)$state * (float)$get('quantity'))
-                                    )
-                                    ->required()
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('subtotal')
-                                    ->label(__('Subtotal'))
-                                    ->numeric()
-                                    ->prefix('₹')
-                                    ->readOnly()
-                                    ->columnSpan(4),
-                            ])
-                            ->columns(12)
+                        Forms\Components\TextInput::make('subtotal')
+                            ->label(__('Subtotal'))
+                            ->numeric()
+                            ->prefix('₹')
+                            ->default(0.00),
+                        Forms\Components\TextInput::make('tax_amount')
+                            ->label(__('Tax'))
+                            ->numeric()
+                            ->prefix('₹')
+                            ->default(0.00),
+                        Forms\Components\TextInput::make('total_amount')
+                            ->label(__('Total'))
+                            ->numeric()
+                            ->prefix('₹')
+                            ->required()
+                            ->default(0.00),
+                        Forms\Components\Textarea::make('notes')
+                            ->label(__('Notes'))
+                            ->rows(3)
                             ->columnSpanFull(),
-                    ]),
+                    ])->columns(2),
             ]);
     }
 
@@ -121,82 +87,59 @@ class PurchaseOrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('po_number')
-                    ->label(__('PO #'))
+                Tables\Columns\TextColumn::make('order_number')
+                    ->label(__('Order #'))
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                Tables\Columns\TextColumn::make('vendor.company_name')
+                Tables\Columns\TextColumn::make('vendor.name')
                     ->label(__('Vendor'))
-                    ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('order_date')
                     ->label(__('Order Date'))
-                    ->date('M d, Y')
+                    ->date('d M Y')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('expected_delivery_date')
+                    ->label(__('Delivery'))
+                    ->date('d M Y')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
                     ->colors([
-                        'warning' => 'draft',
-                        'info' => 'issued',
+                        'gray' => 'draft',
+                        'info' => 'sent',
+                        'warning' => 'confirmed',
                         'success' => 'received',
                         'danger' => 'cancelled',
-                    ])
-                    ->icons([
-                        'heroicon-o-pencil' => 'draft',
-                        'heroicon-o-paper-airplane' => 'issued',
-                        'heroicon-o-check-circle' => 'received',
-                        'heroicon-o-ban' => 'cancelled',
                     ]),
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->label(__('Total'))
+                    ->money('INR')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->label(__('Status'))
                     ->options([
-                        'draft' => 'Draft',
-                        'issued' => 'Issued',
-                        'partially_received' => 'Partially Received',
-                        'received' => 'Received',
-                        'cancelled' => 'Cancelled',
+                        'draft' => __('Draft'),
+                        'sent' => __('Sent'),
+                        'confirmed' => __('Confirmed'),
+                        'received' => __('Received'),
+                        'cancelled' => __('Cancelled'),
                     ]),
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->form(static::form()),
                     Tables\Actions\EditAction::make(),
-                    Tables\Actions\Action::make('receive_goods')
-                        ->label('Receive Goods (GRN)')
-                        ->icon('heroicon-o-truck')
-                        ->color('success')
-                        ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['issued', 'partially_received']))
-                        ->action(function (PurchaseOrder $record) {
-                            $grn = GoodsReceiptNote::create([
-                                'grn_number' => 'GRN-' . strtoupper(uniqid()),
-                                'purchase_order_id' => $record->id,
-                                'received_date' => now(),
-                            ]);
-
-                            foreach ($record->items as $item) {
-                                $grn->items()->create([
-                                    'product_id' => $item->product_id,
-                                    'received_quantity' => $item->quantity,
-                                ]);
-
-                                $product = Product::find($item->product_id);
-                                if ($product) {
-                                    $product->increment('stock_quantity', $item->quantity);
-                                }
-                            }
-
-                            $record->update(['status' => 'received']);
-
-                            Notification::make()
-                                ->title('Goods received! Inventory stock updated.')
-                                ->success()
-                                ->send();
-                        }),
+                    Tables\Actions\DeleteAction::make(),
                 ]),
             ])
             ->bulkActions([
@@ -204,7 +147,14 @@ class PurchaseOrderResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('order_date', 'desc');
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array

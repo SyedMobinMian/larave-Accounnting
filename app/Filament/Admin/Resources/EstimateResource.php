@@ -42,10 +42,10 @@ class EstimateResource extends Resource
                         Forms\Components\Select::make('status')
                             ->label(__('Status'))
                             ->options([
-                                'draft' => 'Draft',
-                                'sent' => 'Sent',
-                                'accepted' => 'Accepted',
-                                'declined' => 'Declined',
+                                'draft' => __('Draft'),
+                                'sent' => __('Sent'),
+                                'accepted' => __('Accepted'),
+                                'declined' => __('Declined'),
                             ])
                             ->default('draft')
                             ->required(),

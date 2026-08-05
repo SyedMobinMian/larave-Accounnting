@@ -9,12 +9,14 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BankAccountResource extends Resource
 {
     protected static ?string $model = BankAccount::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
+    protected static ?int $navigationSort = 1;
 
     public static function getNavigationGroup(): ?string
     {
@@ -23,7 +25,17 @@ class BankAccountResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('Bank & Cash Accounts');
+        return __('Bank Accounts');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Bank Account');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Bank Accounts');
     }
 
     public static function form(Form $form): Form
@@ -31,43 +43,42 @@ class BankAccountResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('Account Details'))
+                    ->description(__('Bank account information'))
+                    ->icon('heroicon-o-building-library')
                     ->schema([
-                        Forms\Components\TextInput::make('account_name')
-                            ->label(__('Account Display Name'))
-                            ->placeholder('e.g. HDFC Main Business Account')
-                            ->required(),
-
+                        Forms\Components\TextInput::make('name')
+                            ->label(__('Account Name'))
+                            ->required()
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('bank_name')
                             ->label(__('Bank Name'))
-                            ->placeholder('e.g. HDFC Bank')
-                            ->required(),
-
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('account_number')
                             ->label(__('Account Number'))
-                            ->required(),
-
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('ifsc_code')
                             ->label(__('IFSC Code'))
-                            ->placeholder('e.g. HDFC0001234')
-                            ->required(),
-
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('branch')
-                            ->label(__('Branch Name')),
-
+                            ->label(__('Branch'))
+                            ->maxLength(255),
                         Forms\Components\TextInput::make('upi_id')
-                            ->label(__('UPI ID / VPA (For QR Code)'))
-                            ->placeholder('e.g. company@hdfcbank')
-                            ->required(),
-
+                            ->label(__('UPI ID'))
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('currency')
+                            ->label(__('Currency'))
+                            ->default('INR')
+                            ->maxLength(3),
                         Forms\Components\TextInput::make('opening_balance')
                             ->label(__('Opening Balance'))
                             ->numeric()
                             ->prefix('₹')
-                            ->default(0.00)
-                            ->required(),
-
+                            ->default(0.00),
+                        Forms\Components\Toggle::make('is_active')
+                            ->label(__('Active'))
+                            ->default(true),
                         Forms\Components\Toggle::make('is_default')
-                            ->label(__('Default Bank for Invoices'))
+                            ->label(__('Default Account'))
                             ->default(false),
                     ])->columns(2),
             ]);
@@ -77,40 +88,59 @@ class BankAccountResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('account_name')
+                Tables\Columns\TextColumn::make('name')
                     ->label(__('Account Name'))
                     ->searchable()
-                    ->sortable(),
-
+                    ->sortable()
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('bank_name')
                     ->label(__('Bank'))
-                    ->searchable(),
-
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('account_number')
-                    ->label(__('Account #'))
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('ifsc_code')
-                    ->label(__('IFSC Code')),
-
-                Tables\Columns\TextColumn::make('upi_id')
-                    ->label(__('UPI ID'))
-                    ->badge()
-                    ->color('info'),
-
+                    ->label(__('Account Number'))
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('opening_balance')
-                    ->label(__('Balance'))
+                    ->label(__('Opening Balance'))
                     ->money('INR')
-                    ->sortable(),
-
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label(__('Active'))
+                    ->boolean(),
                 Tables\Columns\IconColumn::make('is_default')
                     ->label(__('Default'))
                     ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label(__('Status')),
+                Tables\Filters\TernaryFilter::make('is_default')
+                    ->label(__('Default')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ]);
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('name');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array

@@ -1,83 +1,101 @@
-# Improvement Plan
+# i18n Internationalization Plan for Laravel Accounting
 
-## 1. Export/Import Functionality
+## 1. Information Gathered
 
-### Resources to add exports:
-- **ClientResource** - Export all clients (CSV/XLSX), Import clients
-- **ProductResource** - Export products with stock levels, Import products with stock
-- **InvoiceResource** - Export invoices with status, amounts, client details
-- **ExpenseResource** - Export expenses
-- **VendorResource** - Export vendors
-- **PurchaseOrderResource** - Export purchase orders
+### Current State:
+- **Language files exist**: `lang/en.json`, `lang/hi.json`, `lang/de.json`, `lang/es.json`
+- **Filament Language Switch plugin** is already configured in `AppServiceProvider`
+- **Many resources already use `__()` helper** for labels (good progress)
+- **Code has mixed i18n usage**: Some files use `__('String')`, others have raw strings
 
-### Implementation:
-- Create `app/Exports/` directory with dedicated export classes for each model
-- Create `app/Imports/` directory with import classes for Client and Product
-- Add `->headerActions()` with ExportAction and ImportAction in each resource's table()
-- Add filter-aware exports (export visible/filtered records)
-- Add summary reports (Revenue vs Expense, Invoice Aging, Stock Status)
+### Files with Hardcoded User-Facing Strings (Needing i18n):
 
-## 2. UI Beautification
+#### A. Blade Views (5 files):
+1. `resources/views/landing.blade.php` - Full landing page with hardcoded text
+2. `resources/views/filament/pages/settings-workspace.blade.php` - "Settings", "Save Settings", group labels
+3. `resources/views/filament/pages/financial-report.blade.php` - "Total Revenue", "Total Expenses", "Net Profit / (Loss)", "Trial Balance Overview", table headers, "No transaction entries found"
+4. `resources/views/pdf/document.blade.php` - PDF template with "Billed To:", "Issue Date:", "Due/Expiry Date:", "Description", "Qty", "Unit Price", "Amount", "Subtotal:", "Tax Total:", "Total:", "Notes:", "Terms & Conditions:", footer text
+5. `resources/views/pdf/invoice.blade.php` - Legacy invoice PDF
 
-### Dashboard improvements:
-- Enhanced FinancialOverviewWidget with charts
-- Quick action cards on dashboard
-- Recently created/updated records widget
+#### B. PHP Resource Files with Hardcoded Labels (that don't use `__()`):
+1. `app/Filament/Admin/Resources/InvoiceResource.php` - Status options ('Unpaid', 'Paid', 'Cancelled')
+2. `app/Filament/Admin/Resources/EstimateResource.php` - Status options in form ('Draft', 'Sent', 'Accepted', 'Declined')
+3. `app/Filament/Admin/Resources/ClientResource.php` - `$navigationGroup`, `$navigationLabel`, `$modelLabel`, `$pluralModelLabel`
+4. `app/Filament/Admin/Resources/AccountResource.php` - `$navigationGroup`
+5. `app/Filament/Admin/Resources/ContactResource.php` - labels
+6. `app/Filament/Admin/Resources/UserResource.php` - "User Account Details", "Associated Client Company...", "Client Account", "Internal Staff / Admin"
+7. `app/Filament/Admin/Resources/VendorResource.php` - Uses `__()` via getNavigationGroup()
+8. `app/Filament/Admin/Resources/BankAccountResource.php` - Uses `__()` via getNavigationGroup()
+9. `app/Filament/Admin/Resources/BillResource.php` - Status options not using `__()`
+10. `app/Filament/Admin/Resources/PurchaseOrderResource.php` - Status options
+11. `app/Filament/Admin/Resources/ProductResource.php` - navigation labels
+12. `app/Filament/Admin/Resources/LeadResource.php` - labels
+13. `app/Filament/Admin/Resources/WarehouseResource.php` - labels
+14. `app/Filament/Admin/Resources/StockMovementResource.php` - labels
+15. `app/Filament/Admin/Resources/CategoryResource.php` - labels
+16. `app/Filament/Admin/Resources/UnitResource.php` - labels
 
-### Resource enhancements:
-- Better form layouts with sections, tabs, grid layouts
-- Avatar/icon support for clients and vendors
-- Color-coded status badges and progress indicators
-- Improved empty states with helpful messages
-- Responsive table columns with toggleable visibility
+#### C. PHP Pages with Hardcoded Strings:
+1. `app/Filament/Admin/Pages/Settings/SettingsWorkspace.php` - Categories, tabs, sections, labels, helper texts, notification messages - MASSIVE file
+2. `app/Filament/Admin/Pages/ManageSettings.php` - Section titles, descriptions, labels, notification
+3. `app/Filament/Admin/Pages/ManageSystemSettings.php` - Labels, descriptions, options
+4. `app/Filament/Pages/ManageSystemSettings.php` - Labels, options
+5. `app/Filament/Admin/Pages/FinancialReport.php` - `$navigationGroup`
+6. `app/Filament/Admin/Resources/InvoiceResource/RelationManagers/ItemsRelationManager.php` - "Product" label
 
-### Theme & Styling:
-- Custom dashboard welcome page
-- Better sidebar organization with icons
-- Loading states and skeleton screens
-- Toast notifications styling
+#### D. PHP Widgets:
+1. `app/Filament/Widgets/FinancialOverviewWidget.php` - Most already use `__()` ✓
+2. `app/Filament/Widgets/RevenueVsExpenseChart.php` - `$heading` hardcoded
 
-## 3. Performance Optimization
+#### E. Exports:
+1. `app/Exports/ProductsExport.php` - `headings()` has hardcoded column names
+2. `app/Exports/InvoicesExport.php` - `headings()` has hardcoded column names
+3. `app/Exports/ClientsExport.php` - `headings()` has hardcoded column names
+4. `app/Exports/ExpensesExport.php` - (needs checking)
+5. `app/Exports/VendorsExport.php` - (needs checking)
 
-### Eager Loading:
-- Add `->with(['client', 'items'])` in InvoiceResource queries
-- Add `->with(['vendor', 'expenseAccount', 'paymentAccount'])` in ExpenseResource queries
-- Add `->with(['vendor', 'items.product'])` in PurchaseOrderResource
+#### F. Imports:
+1. `app/Imports/ClientsImport.php` - Column mapping literals
+2. `app/Imports/ProductsImport.php` - Column mapping literals
 
-### Query Optimization:
-- Use select() to fetch only needed columns
-- Add chunking for large datasets in exports
-- Use pagination customization (25, 50, 100 per page)
-- Index recommendations for frequently queried columns
+#### G. Settings Classes:
+1. `app/Settings/CompanySettings.php` - (needs checking)
+2. `app/Settings/EmailSettings.php` - (needs checking)
+3. `app/Settings/InventorySettings.php` - (needs checking)
+4. `app/Settings/PaymentSettings.php` - (needs checking)
+5. `app/Settings/SecuritySettings.php` - (needs checking)
 
-### Caching:
-- Add config caching for settings
-- Cache dropdown options (accounts list, product list) with lazy loading
-- Use Filament's spatie cache settings plugin
+#### H. AdminPanelProvider:
+1. `app/Providers/Filament/AdminPanelProvider.php` - Navigation group labels use `__()` ✓
 
-### Infrastructure:
-- Enable OPcache in PHP
-- Database query optimization with EXPLAIN analysis
-- Queue exports and imports for large datasets
-- Use lazy loading for relationship counts
+## 2. Plan
 
-## Files To Be Created:
-1. `app/Exports/ClientsExport.php`
-2. `app/Exports/ProductsExport.php`
-3. `app/Exports/InvoicesExport.php`
-4. `app/Exports/ExpensesExport.php`
-5. `app/Exports/VendorsExport.php`
-6. `app/Imports/ClientsImport.php`
-7. `app/Imports/ProductsImport.php`
-8. `app/Imports/InvoicesImport.php`
+### Phase 1: Add missing strings to language files
+- Collect all hardcoded strings and add them to `lang/en.json`
+- Ensure translations match for hi, de, es
 
-## Files To Be Modified:
-1. `app/Filament/Admin/Resources/ClientResource.php`
-2. `app/Filament/Admin/Resources/ProductResource.php`
-3. `app/Filament/Admin/Resources/InvoiceResource.php`
-4. `app/Filament/Admin/Resources/ExpenseResource.php`
-5. `app/Filament/Admin/Resources/VendorResource.php`
-6. `app/Filament/Admin/Resources/PurchaseOrderResource.php`
-7. `app/Filament/Widgets/FinancialOverviewWidget.php`
-8. `app/Providers/Filament/AdminPanelProvider.php`
+### Phase 2: Fix Blade Views
+- Update all blade views to use `__()` or `@lang()` / `{{ __('...') }}`
+
+### Phase 3: Fix PHP Resources/Pages/Widgets
+- Convert all hardcoded labels, titles, descriptions, helper texts, options to use `__()`
+
+### Phase 4: Fix Exports/Imports
+- Convert export headings to translatable strings
+
+### Phase 5: Fix Settings Classes & PDF templates
+- Ensure all user-facing strings are in language files
+
+## 3. Dependent Files to Edit
+1. `lang/en.json` - Add missing translations
+2. `lang/hi.json` - Add missing translations  
+3. `lang/de.json` - Add missing translations
+4. `lang/es.json` - Add missing translations
+5. Each Blade view file
+6. Each PHP Resource/Page/Widget file with hardcoded strings
+
+## 4. Followup Steps
+- Verify the application loads without errors
+- Test language switching works
+- Confirm all user-facing text is translatable
 

@@ -45,17 +45,17 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, ShouldAuto
     public function headings(): array
     {
         return [
-            'ID',
-            'SKU',
-            'Product Name',
-            'Description',
-            'Cost Price',
-            'Selling Price',
-            'Stock Quantity',
-            'Min Stock Alert',
-            'Unit',
-            'Active',
-            'Created At',
+            __('ID'),
+            __('SKU'),
+            __('Product Name'),
+            __('Description'),
+            __('Cost Price'),
+            __('Selling Price'),
+            __('Stock Quantity'),
+            __('Min Stock Alert'),
+            __('Unit'),
+            __('Active'),
+            __('Created At'),
         ];
     }
 
@@ -71,7 +71,7 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, ShouldAuto
             $product->stock_quantity,
             $product->min_stock_alert,
             $product->unit?->short_name ?? 'pcs',
-            $product->is_active ? 'Yes' : 'No',
+            $product->is_active ? __('Yes') : __('No'),
             $product->created_at?->format('Y-m-d H:i:s'),
         ];
     }
@@ -83,4 +83,3 @@ class ProductsExport implements FromQuery, WithHeadings, WithMapping, ShouldAuto
         ];
     }
 }
-

@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get the super admin role name from the config, default to 'super_admin'
+        // Get the super admin role name from the config, default to 'super,_admin'
         $superAdminRoleName = config('filament-shield.super_admin.name', 'super_admin');
 
         // Find or create the super admin role

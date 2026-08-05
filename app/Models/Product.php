@@ -14,6 +14,8 @@ class Product extends Model
         'name',
         'sku',
         'description',
+        'category_id',
+        'warehouse_id',
         'unit_id',
         'cost_price',
         'selling_price',
@@ -33,6 +35,16 @@ class Product extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 
     public function decreaseStock(int $quantity): void

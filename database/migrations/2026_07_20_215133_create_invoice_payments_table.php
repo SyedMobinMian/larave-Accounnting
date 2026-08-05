@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('invoice_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
+            $table->foreignId('account_id')->nullable()->constrained('accounts')->nullOnDelete();
             
             // Ye columns required hain seeder ke liye:
             $table->string('payment_number')->nullable();
@@ -24,6 +25,8 @@ return new class extends Migration
             $table->text('notes')->nullable();
             
             $table->timestamps();
+
+            $table->index(['invoice_id']);
         });
     }
 

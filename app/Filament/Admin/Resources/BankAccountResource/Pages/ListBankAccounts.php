@@ -17,3 +17,4 @@ class ListBankAccounts extends ListRecords
         ];
     }
 }
+

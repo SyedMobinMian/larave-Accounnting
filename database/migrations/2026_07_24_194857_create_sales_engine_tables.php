@@ -6,21 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        // Create estimates table if it doesn't exist
-        if (!Schema::hasTable('estimates')) {
-            Schema::create('estimates', function (Blueprint $table) {
-                $table->id();
-                $table->string('estimate_number');
-                $table->foreignId('client_id')->constrained()->cascadeOnDelete();
-                $table->date('estimate_date');
-                $table->date('expiry_date');
-                $table->enum('status', ['draft', 'sent', 'accepted', 'declined', 'expired'])->default('draft');
-                $table->decimal('subtotal', 15, 2)->default(0.00);
-                $table->decimal('tax_amount', 15, 2)->default(0.00);
-                $table->decimal('total_amount', 15, 2)->default(0.00);
-                $table->timestamps();
-            });
-        }
+        // The estimates table was already created by 2026_07_25_000001_create_estimates_table
+        // (which includes notes + terms columns). This migration only ensures the
+        // estimate_items table and the invoices.estimate_id link exist.
 
         // Create estimate_items table if it doesn't exist
         if (!Schema::hasTable('estimate_items')) {
@@ -36,6 +24,21 @@ return new class extends Migration {
             });
         }
 
+        // Ensure estimates table has expected columns if it somehow predates the new schema
+        if (Schema::hasTable('estimates')) {
+            Schema::table('estimates', function (Blueprint $table) {
+                if (!Schema::hasColumn('estimates', 'notes')) {
+                    $table->text('notes')->nullable()->after('total_amount');
+                }
+                if (!Schema::hasColumn('estimates', 'terms')) {
+                    $table->text('terms')->nullable()->after('notes');
+                }
+                if (!Schema::hasColumn('estimates', 'expiry_date')) {
+                    $table->date('expiry_date')->nullable()->after('estimate_date');
+                }
+            });
+        }
+
         // Add estimate_id link to invoices table if missing
         if (Schema::hasTable('invoices') && !Schema::hasColumn('invoices', 'estimate_id')) {
             Schema::table('invoices', function (Blueprint $table) {
@@ -46,7 +49,6 @@ return new class extends Migration {
 
     public function down(): void {
         Schema::dropIfExists('estimate_items');
-        Schema::dropIfExists('estimates');
         if (Schema::hasColumn('invoices', 'estimate_id')) {
             Schema::table('invoices', function (Blueprint $table) {
                 $table->dropForeign(['estimate_id']);
@@ -55,3 +57,4 @@ return new class extends Migration {
         }
     }
 };
+

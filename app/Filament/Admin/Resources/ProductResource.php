@@ -88,11 +88,12 @@ class ProductResource extends Resource
                             ->required()
                             ->minValue(0)
                             ->helperText(__('You will be alerted when stock falls below this level')),
-                        Forms\Components\TextInput::make('unit')
+                        Forms\Components\Select::make('unit_id')
                             ->label(__('Measurement Unit'))
-                            ->default('pcs')
-                            ->placeholder('pcs, kg, meters')
-                            ->required(),
+                            ->relationship('unit', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->nullable(),
                         Forms\Components\Toggle::make('is_active')
                             ->label(__('Active Status'))
                             ->default(true)
@@ -150,8 +151,7 @@ class ProductResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->form(static::form()),
+                    Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ]),

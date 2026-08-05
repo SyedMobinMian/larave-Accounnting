@@ -18,7 +18,20 @@ class ClientEstimateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static ?string $navigationLabel = 'My Estimates';
+    public static function getNavigationLabel(): string
+    {
+        return __('My Estimates');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Estimate');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('My Estimates');
+    }
 
     public static function canCreate(): bool { return false; }
     public static function canDelete($record): bool { return false; }
@@ -43,13 +56,16 @@ class ClientEstimateResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('estimate_number')
-                    ->label('Estimate #')
+                    ->label(__('Estimate #'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date')
+                    ->label(__('Date'))
                     ->date(),
                 Tables\Columns\TextColumn::make('expiry_date')
+                    ->label(__('Expiry Date'))
                     ->date(),
                 Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'accepted' => 'success',
@@ -58,12 +74,13 @@ class ClientEstimateResource extends Resource
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('total')
+                    ->label(__('Total'))
                     ->money('INR'),
             ])
             ->actions([
                 // ✅ Accept Action
                 Action::make('accept')
-                    ->label('Accept Quote')
+                    ->label(__('Accept Quote'))
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
@@ -71,14 +88,14 @@ class ClientEstimateResource extends Resource
                     ->action(function (Estimate $record) {
                         $record->update(['status' => 'accepted']);
                         Notification::make()
-                            ->title('Estimate Accepted Successfully!')
+                            ->title(__('Estimate Accepted Successfully!'))
                             ->success()
                             ->send();
                     }),
 
                 // ❌ Reject Action
                 Action::make('decline')
-                    ->label('Decline Quote')
+                    ->label(__('Decline Quote'))
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
@@ -86,7 +103,7 @@ class ClientEstimateResource extends Resource
                     ->action(function (Estimate $record) {
                         $record->update(['status' => 'declined']);
                         Notification::make()
-                            ->title('Estimate Declined')
+                            ->title(__('Estimate Declined'))
                             ->warning()
                             ->send();
                     }),
