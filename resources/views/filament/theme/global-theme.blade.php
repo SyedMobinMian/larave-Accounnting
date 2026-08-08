@@ -1,11 +1,25 @@
 {{-- Global Admin Panel Theme - applied to the entire panel via PanelsRenderHook::STYLES_AFTER --}}
+@php
+    // Theme colors are driven by Settings (see AdminPanelProvider::resolveTheme).
+    $primary = $primary ?? '#6366f1';
+    $accent = $accent ?? '#a855f7';
+    $sidebarBg = $sidebarBg ?? '#ffffff';
+    $primaryRgb = implode(',', array_map('hexdec', str_split(ltrim($primary, '#'), 2)));
+    $accentRgb = implode(',', array_map('hexdec', str_split(ltrim($accent, '#'), 2)));
+@endphp
 <style>
+    :root {
+        --theme-primary: {{ $primary }};
+        --theme-accent: {{ $accent }};
+        --theme-sidebar-bg: {{ $sidebarBg }};
+    }
+
     /* =========================================================
        Slim Sidebar
        ========================================================= */
     .fi-sidebar {
         width: 15.5rem !important;
-        background: linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%) !important;
+        background: linear-gradient(180deg, var(--theme-sidebar-bg) 0%, {{ $sidebarBg === '#10112a' ? '#141433' : '#f7f8ff' }} 100%) !important;
         border-right: 1px solid rgba(99, 102, 241, 0.12);
     }
 
@@ -237,9 +251,35 @@
     .dark .fi-wi-stats-overview-stat {
         border-color: rgba(99, 102, 241, 0.15);
     }
-    .dark .fi-ta-content thead th {
+.dark .fi-ta-content thead th {
         background: linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08));
         color: #c7d2fe;
     }
 </style>
+
+<script>
+    // =========================================================
+    // Sidebar Accordion: auto-collapse other groups when one expands
+    // =========================================================
+    document.addEventListener('DOMContentLoaded', function () {
+        // Collapse all other expanded nav groups when one is expanded.
+        const collapseOthers = (clickedButton) => {
+            const allButtons = document.querySelectorAll('.fi-sidebar-group-button');
+            allButtons.forEach((other) => {
+                if (other === clickedButton) return;
+                if (other.getAttribute('aria-expanded') === 'true') {
+                    other.click();
+                }
+            });
+        };
+
+        // Event delegation handles Livewire re-renders automatically.
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fi-sidebar-group-button');
+            if (!btn) return;
+            // Wait for Filament's own toggle handler to run, then collapse others.
+            setTimeout(() => collapseOthers(btn), 30);
+        });
+    });
+</script>
 

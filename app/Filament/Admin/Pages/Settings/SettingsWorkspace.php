@@ -58,7 +58,8 @@ class SettingsWorkspace extends Page implements HasForms
             'appearance' => ['label' => 'Appearance & Branding', 'icon' => 'heroicon-o-paint-brush', 'group' => 'Appearance', 'tabs' => ['theme' => ['label' => 'Theme', 'icon' => 'heroicon-o-swatch'], 'layout' => ['label' => 'Layout', 'icon' => 'heroicon-o-table-cells'], 'invoice-designer' => ['label' => 'Invoice Designer', 'icon' => 'heroicon-o-document-chart-bar']]],
             'access-management' => ['label' => 'Access Management', 'icon' => 'heroicon-o-shield-check', 'group' => 'Administration', 'tabs' => ['users' => ['label' => 'All Users', 'icon' => 'heroicon-o-users'], 'roles-permissions' => ['label' => 'Roles & Permissions', 'icon' => 'heroicon-o-shield-check']]],
             'notifications' => ['label' => 'Notifications', 'icon' => 'heroicon-o-bell', 'group' => 'Administration', 'tabs' => ['email-settings' => ['label' => 'Email (SMTP)', 'icon' => 'heroicon-o-envelope'], 'notification-preferences' => ['label' => 'Notifications', 'icon' => 'heroicon-o-bell-alert']]],
-            'security' => ['label' => 'Security', 'icon' => 'heroicon-o-lock-closed', 'group' => 'Administration', 'tabs' => ['password-policy' => ['label' => 'Password Policy', 'icon' => 'heroicon-o-key'], 'session' => ['label' => 'Session', 'icon' => 'heroicon-o-clock'], 'audit-log' => ['label' => 'Audit Log', 'icon' => 'heroicon-o-document-text']]],
+'security' => ['label' => 'Security', 'icon' => 'heroicon-o-lock-closed', 'group' => 'Administration', 'tabs' => ['password-policy' => ['label' => 'Password Policy', 'icon' => 'heroicon-o-key'], 'session' => ['label' => 'Session', 'icon' => 'heroicon-o-clock'], 'audit-log' => ['label' => 'Audit Log', 'icon' => 'heroicon-o-document-text']]],
+            'data-export' => ['label' => 'Data Export', 'icon' => 'heroicon-o-arrow-down-tray', 'group' => 'Administration', 'tabs' => ['backup-export' => ['label' => 'Full Backup Export', 'icon' => 'heroicon-o-archive-box']]],
             'integrations' => ['label' => 'Integrations', 'icon' => 'heroicon-o-puzzle-piece', 'group' => 'Platform', 'tabs' => ['payment-gateways' => ['label' => 'Payment Gateways', 'icon' => 'heroicon-o-credit-card'], 'api-keys' => ['label' => 'API Keys', 'icon' => 'heroicon-o-key']]],
             'ai' => ['label' => 'AI', 'icon' => 'heroicon-o-sparkles', 'group' => 'Platform', 'tabs' => ['ai-settings' => ['label' => 'AI Configuration', 'icon' => 'heroicon-o-cpu-chip']]],
             'system' => ['label' => 'System', 'icon' => 'heroicon-o-server-stack', 'group' => 'Platform', 'tabs' => ['system-info' => ['label' => 'System Information', 'icon' => 'heroicon-o-information-circle'], 'logs' => ['label' => 'System Logs', 'icon' => 'heroicon-o-document-text'], 'maintenance' => ['label' => 'Maintenance', 'icon' => 'heroicon-o-wrench-screwdriver']]],
@@ -161,9 +162,10 @@ class SettingsWorkspace extends Page implements HasForms
             'access-management.roles-permissions' => $this->getRolesPermissionsSchema(),
             'notifications.email-settings' => $this->getSmtpSettingsSchema(),
             'notifications.notification-preferences' => $this->getEmailNotificationsSchema(),
-            'security.password-policy' => $this->getPasswordPolicySchema(),
+'security.password-policy' => $this->getPasswordPolicySchema(),
             'security.session' => $this->getSessionSchema(),
             'security.audit-log' => $this->getAuditLogSchema(),
+            'data-export.backup-export' => $this->getBackupExportSchema(),
             'integrations.payment-gateways' => $this->getPaymentGatewaysSchema(),
             'integrations.api-keys' => $this->getApiKeysSchema(),
             'ai.ai-settings' => $this->getAiSettingsSchema(),
@@ -208,7 +210,7 @@ class SettingsWorkspace extends Page implements HasForms
 
             foreach ($data as $key => $value) {
                 if (property_exists($settings, $key)) {
-                    $settings->$key = $value;
+                    $settings->$key = $this->coerceValue($value, $settings, $key);
                 }
             }
 
@@ -223,7 +225,50 @@ class SettingsWorkspace extends Page implements HasForms
                 ->title('Failed to save settings')
                 ->danger()
                 ->send();
+        } catch (\Throwable $e) {
+            Notification::make()
+                ->title('Failed to save settings')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
         }
+    }
+
+    /**
+     * Coerce a form value into the declared PHP type of the settings property,
+     * so "false" strings / numeric strings are saved correctly to typed props.
+     */
+    protected function coerceValue(mixed $value, object $settings, string $key): mixed
+    {
+        if (! property_exists($settings, $key)) {
+            return $value;
+        }
+
+        $type = (new \ReflectionProperty($settings, $key))->getType();
+
+        if (! $type) {
+            return $value;
+        }
+
+        $typeName = (string) $type;
+
+        if (str_contains($typeName, 'int')) {
+            return (int) $value;
+        }
+
+        if (str_contains($typeName, 'float')) {
+            return (float) $value;
+        }
+
+        if (str_contains($typeName, 'bool')) {
+            if (is_bool($value)) {
+                return $value;
+            }
+
+            return in_array(strtolower((string) $value), ['1', 'true', 'on', 'yes'], true);
+        }
+
+        return $value;
     }
 
     // Form Schemas
@@ -343,9 +388,68 @@ class SettingsWorkspace extends Page implements HasForms
         return [Section::make('UPI Settings')->schema([Toggle::make('enable_upi')->label('Enable UPI Payments')->default(true), TextInput::make('upi_id')->label('UPI ID / VPA')->placeholder('company@upi')])->columns(2)];
     }
 
-    protected function getThemeSchema(): array
+protected function getThemeSchema(): array
     {
-        return [Section::make('Theme Settings')->schema([Select::make('application_theme')->label('Theme')->options(['default' => 'Default (Amber)', 'blue' => 'Blue', 'green' => 'Green', 'purple' => 'Purple', 'red' => 'Red'])->default('default'), TextInput::make('company_primary_color')->label('Primary Color (Hex)')->placeholder('#f59e0b')])->columns(2)];
+        return [
+            Section::make('Color Theme')
+                ->description('Choose a preset or set a custom primary color. The sidebar, icons, buttons and headings update automatically.')
+                ->schema([
+                    Select::make('application_theme')
+                        ->label(__('Theme Preset'))
+                        ->options([
+                            'default' => 'Indigo (Default)',
+                            'blue' => 'Blue',
+                            'green' => 'Green',
+                            'purple' => 'Purple',
+                            'red' => 'Red',
+                            'orange' => 'Orange',
+                            'teal' => 'Teal',
+                            'pink' => 'Pink',
+                            'dark' => 'Dark Sidebar',
+                        ])
+                        ->default('default')
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set) {
+                            $presets = [
+                                'default' => '#6366f1',
+                                'blue' => '#3b82f6',
+                                'green' => '#10b981',
+                                'purple' => '#8b5cf6',
+                                'red' => '#ef4444',
+                                'orange' => '#f97316',
+                                'teal' => '#14b8a6',
+                                'pink' => '#ec4899',
+                                'dark' => '#6366f1',
+                            ];
+                            $set('company_primary_color', $presets[$state] ?? '#6366f1');
+                        }),
+                    TextInput::make('company_primary_color')
+                        ->label(__('Primary Color (Hex)'))
+                        ->helperText(__('Sidebar active item, buttons, headings, icons highlight.'))
+                        ->placeholder('#6366f1')
+                        ->regex('/^#[0-9a-fA-F]{6}$/')
+                        ->default('#6366f1'),
+                    TextInput::make('theme_accent_color')
+                        ->label(__('Accent Color (Hex)'))
+                        ->helperText(__('Secondary highlight used for gradients.'))
+                        ->placeholder('#a855f7')
+                        ->regex('/^#[0-9a-fA-F]{6}$/')
+                        ->default('#a855f7'),
+                    TextInput::make('theme_sidebar_color')
+                        ->label(__('Sidebar Background (Hex)'))
+                        ->helperText(__('Background color of the left sidebar.'))
+                        ->placeholder('#ffffff')
+                        ->regex('/^#[0-9a-fA-F]{6}$/')
+                        ->default('#ffffff'),
+                ])
+                ->columns(2),
+            Section::make('Preview')
+                ->description(__('Save and refresh the page to see the new colors applied across the whole panel.'))
+                ->schema([
+                    \Filament\Forms\Components\Placeholder::make('theme_preview')
+                        ->content(__('The primary color is used for active sidebar items, buttons, links and headings. The accent color is used for gradients and highlights.')),
+                ]),
+        ];
     }
 
     protected function getLayoutSchema(): array
@@ -416,6 +520,35 @@ class SettingsWorkspace extends Page implements HasForms
     protected function getCategoriesSchema(): array
     {
         return [Section::make('Category Settings')->description('Configure product category defaults')->schema([Toggle::make('enable_categories')->label('Enable Product Categories')->default(true), Toggle::make('enforce_single_category')->label('Enforce Single Category per Product')->helperText('If disabled, products can belong to multiple categories.')])->columns(2)];
+    }
+
+protected function getBackupExportSchema(): array
+    {
+        return [
+            Section::make('Full Company Backup Export')
+                ->description('Download all company data as a single Excel workbook with one sheet per module. Use this to back up or migrate your entire accounting data.')
+                ->icon('heroicon-o-archive-box')
+                ->schema([
+                    \Filament\Forms\Components\Placeholder::make('backup_info')
+                        ->label('What will be exported')
+                        ->content(implode(', ', \App\Exports\CompanyBackupExport::sheetTitles()) . '.'),
+                    \Filament\Forms\Components\Actions::make([
+                        \Filament\Forms\Components\Actions\Action::make('exportBackup')
+                            ->label('Download Full Backup (.xlsx)')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->color('success')
+                            ->action(fn () => $this->downloadBackup()),
+                    ]),
+                ]),
+        ];
+    }
+
+    public function downloadBackup()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\CompanyBackupExport(),
+            'company-backup-' . now()->format('Y-m-d-His') . '.xlsx'
+        );
     }
 
     public function renderActiveTabContent(): string

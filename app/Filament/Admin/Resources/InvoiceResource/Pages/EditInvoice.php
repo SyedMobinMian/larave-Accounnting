@@ -17,17 +17,27 @@ class EditInvoice extends EditRecord
         ];
     }
 
-    protected function afterSave(): void
+protected function afterSave(): void
     {
         $invoice = $this->getRecord();
-        
-        $subtotal = $invoice->items()->sum('total_price');
-        $tax = $subtotal * 0.10; // 10% tax example
-        
+
+        // Recalculate totals from the saved line items.
+        $subtotal = (float) $invoice->items()->sum('total_price');
+
+        // Pull the configured tax rate from settings (default 10%).
+        $taxRate = 10.0;
+        try {
+            $taxRate = (float) (app(\App\Settings\GeneralSettings::class)->default_tax_rate ?? 10.0);
+        } catch (\Throwable $e) {
+            // fall back to default
+        }
+
+        $tax = round($subtotal * ($taxRate / 100), 2);
+
         $invoice->update([
             'subtotal' => $subtotal,
             'tax_amount' => $tax,
-            'total_amount' => $subtotal + $tax,
+            'total_amount' => round($subtotal + $tax, 2),
         ]);
     }
 }

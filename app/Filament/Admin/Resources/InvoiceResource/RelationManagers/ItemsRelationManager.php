@@ -23,10 +23,10 @@ class ItemsRelationManager extends RelationManager
                     ->options(Product::pluck('name', 'id'))
                     ->searchable()
                     ->reactive()
-                    ->afterStateUpdated(function ($state, Set $set) {
+->afterStateUpdated(function ($state, Set $set) {
                         $product = Product::find($state);
                         if ($product) {
-                            $set('unit_price', $product->sales_price ?? 0);
+                            $set('unit_price', $product->selling_price ?? 0);
                             $set('description', $product->name);
                         }
                     })

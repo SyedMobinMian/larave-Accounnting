@@ -12,15 +12,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // Core setup
             UserSeeder::class,
-            AccountTypeSeeder::class,
-            
+
             // System Settings
             SettingsSeeder::class,
 
             // Demo/Sample data
-            CategoryAndUnitSeeder::class,
-            ProductSeeder::class,
-            ClientAndInvoiceSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }
